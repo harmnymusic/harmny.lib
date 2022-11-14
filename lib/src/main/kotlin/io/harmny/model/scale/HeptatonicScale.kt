@@ -3,6 +3,8 @@ package io.harmny.model.scale
 import io.harmny.model.Alteration
 import io.harmny.model.Note
 import io.harmny.model.NoteName
+import io.harmny.model.Tetrad
+import io.harmny.model.Triad
 import kotlin.math.abs
 
 abstract class HeptatonicScale(
@@ -18,6 +20,30 @@ abstract class HeptatonicScale(
     private val cachedNotes: List<Note> by lazy { findNotes() }
 
     override fun getNotes() = cachedNotes
+
+    override fun getTriadAtDegree(number: Int): Triad {
+        val index = getDegreeIndex(number)
+
+        val note1 = cachedNotes[index]
+        val note2 = cachedNotes[(index + 2) % 7]
+        val note3 = cachedNotes[(index + 4) % 7]
+        return Triad(note1, note2, note3)
+    }
+
+    override fun getTetradAtDegree(number: Int): Tetrad {
+        val index = getDegreeIndex(number)
+
+        val note1 = cachedNotes[index]
+        val note2 = cachedNotes[(index + 2) % 7]
+        val note3 = cachedNotes[(index + 4) % 7]
+        val note4 = cachedNotes[(index + 6) % 7]
+        return Tetrad(note1, note2, note3, note4)
+    }
+
+    private fun getDegreeIndex(number: Int): Int {
+        require(number in 1..7) { "Degree number must be in range 1..7." }
+        return number - 1
+    }
 
     private fun findNotes(): List<Note> {
         // For instance: E, F, G, A, B, C, D
