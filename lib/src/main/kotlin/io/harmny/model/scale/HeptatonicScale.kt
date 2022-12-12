@@ -8,36 +8,40 @@ import io.harmny.model.Triad
 import kotlin.math.abs
 
 abstract class HeptatonicScale(
-    protected val root: Note,
-    private val offsets: List<Int>,
+    private val scaleType: ScaleType,
+    private val root: Note,
 ) : Scale {
 
     init {
-        require(offsets.size == 7) { "Heptatonic scale must have 7 intervals." }
+        require(scaleType.offsets.size == 7) { "Heptatonic scale must have 7 intervals." }
         require(root.alterations.size < 2) { "Root note must have no more than one alteration." }
     }
 
-    private val cachedNotes: List<Note> by lazy { findNotes() }
+    private val _notes: List<Note> by lazy { calculateNotes() }
 
-    override fun getNotes() = cachedNotes
+    override fun getNotes() = _notes
 
-    override fun getTriadAtDegree(number: Int): Triad {
-        val index = getDegreeIndex(number)
+    fun getTriadAt(degree: Int): ScaleTriad {
+        val index = getDegreeIndex(degree)
 
-        val note1 = cachedNotes[index]
-        val note2 = cachedNotes[(index + 2) % 7]
-        val note3 = cachedNotes[(index + 4) % 7]
-        return Triad(note1, note2, note3)
+        val note1 = _notes[index]
+        val note2 = _notes[(index + 2) % 7]
+        val note3 = _notes[(index + 4) % 7]
+
+        val triad = Triad(note1, note2, note3)
+        return ScaleTriad(degree, triad)
     }
 
-    override fun getTetradAtDegree(number: Int): Tetrad {
-        val index = getDegreeIndex(number)
+    fun getTetradAt(degree: Int): ScaleTetrad {
+        val index = getDegreeIndex(degree)
 
-        val note1 = cachedNotes[index]
-        val note2 = cachedNotes[(index + 2) % 7]
-        val note3 = cachedNotes[(index + 4) % 7]
-        val note4 = cachedNotes[(index + 6) % 7]
-        return Tetrad(note1, note2, note3, note4)
+        val note1 = _notes[index]
+        val note2 = _notes[(index + 2) % 7]
+        val note3 = _notes[(index + 4) % 7]
+        val note4 = _notes[(index + 6) % 7]
+
+        val tetrad = Tetrad(note1, note2, note3, note4)
+        return ScaleTetrad(degree, tetrad)
     }
 
     private fun getDegreeIndex(number: Int): Int {
@@ -45,10 +49,10 @@ abstract class HeptatonicScale(
         return number - 1
     }
 
-    private fun findNotes(): List<Note> {
+    private fun calculateNotes(): List<Note> {
         // For instance: E, F, G, A, B, C, D
         val noteNames = generateSequence(root.noteName) { it.next() }.take(7).toList()
-        val scaleNoteNumberValues = offsets.map { it + root.getOffset() }
+        val scaleNoteNumberValues = scaleType.offsets.map { it + root.getOffset() }
         return noteNames.zip(scaleNoteNumberValues).map { (noteName, noteNumberValue) ->
             getApplicableNote(noteName, noteNumberValue)
         }
@@ -81,5 +85,20 @@ abstract class HeptatonicScale(
         } else {
             Alteration.FLAT to (referenceNoteValue - realNoteValue)
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is HeptatonicScale) return false
+
+        if (scaleType != other.scaleType) return false
+        if (root != other.root) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = scaleType.hashCode()
+        result = 31 * result + root.hashCode()
+        return result
     }
 }

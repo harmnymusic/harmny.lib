@@ -6,10 +6,6 @@ data class Triad(
     val note3: Note,
 ) : NotesSequence {
 
-    fun invert(): Triad {
-        return Triad(note2, note3, note1)
-    }
-
     override fun getNotes(): List<Note> {
         return listOf(note1, note2, note3)
     }

@@ -7,10 +7,6 @@ data class Tetrad(
     val note4: Note,
 ) : NotesSequence {
 
-    fun invert(): Tetrad {
-        return Tetrad(note2, note3, note4, note1)
-    }
-
     override fun getNotes(): List<Note> {
         return listOf(note1, note2, note3, note4)
     }
